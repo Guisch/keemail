@@ -1,0 +1,41 @@
+version: "2"
+services:
+  keemaildb:
+    image: mariadb:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: "keemail"
+      MYSQL_USER: "keemail"
+      MYSQL_PASSWORD: "pouetpouet"
+  keemailserver:
+    build: "https://github.com/Guisch/keemailserver"
+    restart: always
+    links:
+      - "keemaildb:keemaildb"
+    depends_on:
+      - "keemaildb"
+    ports:
+      - "5000:80"
+    environment:
+      KEEMAIL_SECRETKEY: "pouetpouet"
+      KEEMAIL_DB_URI: "mysql://keemail:pouetpouet@keemaildb:3306/keemail"
+      KEEMAIL_DOMAIN: "example.com"
+      KEEMAIL_ENV: "development"
+  keemailpostfix:
+    build: "https://github.com/Guisch/keemailpostfix"
+    restart: always
+    links:
+      - "keemaildb:keemaildb"
+    depends_on:
+      - "keemaildb"
+    ports:
+      - "25:25"
+    environment:
+      MYSQL_USER: "keemail"
+      MYSQL_PASSWORD: "pouetpouet"
+      MYSQL_HOST: "keemaildb"
+      MYSQL_DB: "keemail"
+      DOMAIN: "example.com"
